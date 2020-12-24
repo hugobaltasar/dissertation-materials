@@ -67,30 +67,80 @@ foreach kvar in $kvars {
 	restore
 
 	if "`kvar'" == "dynkinc" {
+
+		preserve
+		keep if country == "Croatia"
+		keep if year == 2009
+		keep country country_short mld
+		tempfile mld1
+		save `mld1'
+		restore
+
+		preserve
+		keep if country == "Bulgaria" | country == "Malta" | country == "Romania" | ///
+		   country == "Switzerland"
+		keep if year == 2006
+		keep country country_short mld
+		tempfile mld2
+		save `mld2'
+		restore
+
+		preserve
+		keep if country == "Cyprus" | country == "CzechRepublic" | country == "Germany" | ///
+		   country == "Hungary" | country == "Latvia" | country == "Lithuania" | ///
+		   country == "Netherlands" | country == "Poland" | country == "Slovakia" | ///
+		   country == "Slovenia" | country == "UnitedKingdom"
+		keep if year == 2004
+		keep country country_short mld
+		tempfile mld3
+		save `mld3'
+		restore
+
+		preserve
+		keep if year == 2003
+		keep country country_short mld
+		append using `mld1' `mld2' `mld3'
+		tempfile mld
+		save `mld'
+		restore
+
+		preserve
+		keep if country == "Iceland" | country == "Switzerland"
+		keep if year == 2015
+		keep country country_short eabt_k eabtR_k
+		tempfile eabt
+		save `eabt'
+		restore
+
+		keep if year == 2016
+		keep country country_short eabt_k eabtR_k
+		append using `eabt'
+		merge 1:1 country using `mld', nogen
+
 		qui pwcorr eabt_k mld
 		local cor : display %5.4f r(rho)
 		local scale .7
 
-		twoway (lfitci eabt_k mld) ///
-			(scatter eabt_k mld, color(black) msymbol(d)), ///
+		twoway (lfit eabt_k mld, color("$c1")) ///
+			(scatter eabt_k mld, color(black) msymbol(d) mlabel(country_short)), ///
 			legend(off) ///
-			subtitle("(a) Income inequality and absolute IOP, 2003-2016") ///
+			subtitle("(a) Income inequality and absolute IOP") ///
 			plotregion(margin(b=0)) scale(`scale') ///
 			note("Pairwise correlation: `cor'", size(medsmall) ring(0) position(4) bmargin(medium)) ///
-			yti("Absolute IOP") xti("Income inequality") ///
+			yti("Absolute IOP, 2016 (or last year available)") xti("Income inequality, 2003 (or first year available)") ///
 			yscale(r(0 .06)) ylabel(0(.02).06) xscale(r(.1 .3)) xlabel(.1(.05).3) ///
 			name(gatsby_abs_`kvar', replace) nodraw
 
 		qui pwcorr eabtR_k mld
 		local cor : display %5.4f r(rho)
 
-		twoway (lfitci eabtR_k mld) ///
-			(scatter eabtR_k mld, color(black) msymbol(d)), ///
+		twoway (lfit eabtR_k mld, color("$c1")) ///
+			(scatter eabtR_k mld, color(black) msymbol(d) mlabel(country_short)), ///
 			legend(off) ///
-			subtitle("(b) Income inequality and relative IOP, 2003-2016") ///
+			subtitle("(b) Income inequality and relative IOP") ///
 			plotregion(margin(b=0)) scale(`scale') ///
 			note("Pairwise correlation: `cor'", size(medsmall) ring(0) position(4) bmargin(medium)) ///
-			yti("Relative IOP") xti("Income inequality") ///
+			yti("Relative IOP, 2016 (or last year available)") xti("Income inequality, 2003 (or first year available)") ///
 			yscale(r(0 .3)) ylabel(0(.1).3) xscale(r(.1 .3)) xlabel(.1(.05).3) ///
 			name(gatsby_rel_`kvar', replace) nodraw
 	}
