@@ -29,7 +29,7 @@ global reps 1000
 *Measures of capital income*
 global kvars kinc dynkinc
 
-foreach dofile of newlist programs importdata algorihthm estimations ///
+foreach dofile of newlist programs importdata algorithm estimations ///
 	tables graphs robustness {
 		cd "$codedir"
 		do `dofile'
